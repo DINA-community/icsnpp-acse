@@ -1,0 +1,18 @@
+[package]
+script_dir = scripts
+build_command = ./configure && cmake --build build
+test_command = cd testing && btest -c btest.cfg
+summary = Analyzer for the OSI Association Control Service (ACSE) protocol
+description = The Analyzer implements the OSI Association Control Service
+    according to ISO 8650 / X.227.
+
+[template]
+source = https://github.com/zeek/package-template
+version = v3.1.7
+zkg_version = 3.0.1-33
+features = plugin
+
+[template_vars]
+name = ACSE
+namespace = OSS
+

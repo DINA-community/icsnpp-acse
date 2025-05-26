@@ -1,0 +1,5 @@
+This plugin provides a protocol analyzer for the OSI Association Control
+Service (ACSE) (ISO 8650 /i X.227) for use within Zeek. The analyzer enables
+Zeek to parse ACSE pdus and forwards pdus of lower layers (e.g. MMS) to the
+corresponding analyzer according to the information provided by the
+Presentation layer (SESS Analyzer)
