@@ -56,6 +56,43 @@ IntrusivePtr<Val> convert(OBJECT_IDENTIFIER_t *oid) {
   return make_intrusive<StringVal>(res);
 }
 #endif
+
+/*
+ * In the event of an error, the function does not return,
+ * but deliberately causes a core dump.
+ */
+template <typename T>
+IntrusivePtr<T> get_field_type(IntrusivePtr<RecordVal> container,
+                               const char *fieldname) {
+  auto tag = TYPE_RECORD;
+  if constexpr (std::is_same_v<T, VectorType>)
+    tag = TYPE_VECTOR;
+  auto container_type = cast_intrusive<RecordType>(container->GetType());
+  if (!container_type->HasField(fieldname)) {
+    reporter->InternalError("Unable to process '%s': Missing field '%s'",
+                            container_type->GetName().c_str(), fieldname);
+  }
+  auto field_type = container_type->GetFieldType(fieldname);
+  if (field_type->Tag() != tag) {
+    reporter->InternalError(
+        "Unable to process '%s': Field '%s' is of wrong type",
+        container_type->GetName().c_str(), fieldname);
+  }
+  return cast_intrusive<T>(field_type);
+}
+
+template <typename T>
+IntrusivePtr<T> get_field_type(IntrusivePtr<VectorVal> container) {
+  auto tag = TYPE_RECORD;
+  if constexpr (std::is_same_v<T, VectorType>)
+    tag = TYPE_VECTOR;
+  auto subtype = container->GetType()->Yield();
+  if (!subtype || subtype->Tag() != tag) {
+    reporter->InternalError("Unable to process '%s': Content is of wrong type",
+                            container->GetType()->GetName().c_str());
+  }
+  return cast_intrusive<T>(subtype);
+}
 } // namespace
 
 namespace zeek::plugin::acse {
@@ -72,24 +109,8 @@ IntrusivePtr<Val> process_Name(Name_t *src) {
 
       IntrusivePtr<Val> res;
       {
-
-        static IntrusivePtr<VectorType> type = nullptr;
-        if (!type) {
-          auto container_type =
-              cast_intrusive<RecordType>(container->GetType());
-          if (!container_type->HasField("rdnSequence"))
-            reporter->InternalError("Unable to process 'Name__rdnSequence': "
-                                    "Missing field 'rdnSequence' in %s",
-                                    container_type->GetName().c_str());
-          auto field_type = container_type->GetFieldType("rdnSequence");
-          if (field_type->Tag() != TYPE_VECTOR)
-            reporter->InternalError(
-                "Unable to process 'Name__rdnSequence': "
-                "Field 'rdnSequence' in %s is not of type VectorType",
-                container_type->GetName().c_str());
-          type = cast_intrusive<VectorType>(field_type);
-        }
-
+        static const auto type =
+            get_field_type<VectorType>(container, "rdnSequence");
         const auto container = make_intrusive<VectorVal>(type);
         for (int i = 0; i < src->list.count; i++) {
           const auto _new_src = src->list.array[i];
@@ -145,25 +166,8 @@ IntrusivePtr<Val> process_Context(Context_t *src) {
 
       IntrusivePtr<Val> res;
       {
-
-        static IntrusivePtr<VectorType> type = nullptr;
-        if (!type) {
-          auto container_type =
-              cast_intrusive<RecordType>(container->GetType());
-          if (!container_type->HasField("contextValues"))
-            reporter->InternalError(
-                "Unable to process 'Context__contextValues': "
-                "Missing field 'contextValues' in %s",
-                container_type->GetName().c_str());
-          auto field_type = container_type->GetFieldType("contextValues");
-          if (field_type->Tag() != TYPE_VECTOR)
-            reporter->InternalError(
-                "Unable to process 'Context__contextValues': "
-                "Field 'contextValues' in %s is not of type VectorType",
-                container_type->GetName().c_str());
-          type = cast_intrusive<VectorType>(field_type);
-        }
-
+        static const auto type =
+            get_field_type<VectorType>(container, "contextValues");
         const auto container = make_intrusive<VectorVal>(type);
         for (int i = 0; i < src->list.count; i++) {
           const auto _new_src = src->list.array[i];
@@ -225,27 +229,8 @@ IntrusivePtr<Val> process_AttributeTypeAndDistinguishedValue(
 
       IntrusivePtr<Val> res;
       {
-
-        static IntrusivePtr<VectorType> type = nullptr;
-        if (!type) {
-          auto container_type =
-              cast_intrusive<RecordType>(container->GetType());
-          if (!container_type->HasField("valuesWithContext"))
-            reporter->InternalError(
-                "Unable to process "
-                "'AttributeTypeAndDistinguishedValue__valuesWithContext': "
-                "Missing field 'valuesWithContext' in %s",
-                container_type->GetName().c_str());
-          auto field_type = container_type->GetFieldType("valuesWithContext");
-          if (field_type->Tag() != TYPE_VECTOR)
-            reporter->InternalError(
-                "Unable to process "
-                "'AttributeTypeAndDistinguishedValue__valuesWithContext': "
-                "Field 'valuesWithContext' in %s is not of type VectorType",
-                container_type->GetName().c_str());
-          type = cast_intrusive<VectorType>(field_type);
-        }
-
+        static const auto type =
+            get_field_type<VectorType>(container, "valuesWithContext");
         const auto container = make_intrusive<VectorVal>(type);
         for (int i = 0; i < src->list.count; i++) {
           const auto _new_src = src->list.array[i];
@@ -253,18 +238,7 @@ IntrusivePtr<Val> process_AttributeTypeAndDistinguishedValue(
 
           IntrusivePtr<Val> res;
           {
-
-            static IntrusivePtr<RecordType> type = nullptr;
-            if (!type) {
-              auto subtype = container->GetType()->Yield();
-              if (!subtype || subtype->Tag() != TYPE_RECORD)
-                reporter->InternalError(
-                    "Unable to process 'valuesWithContext__Member': "
-                    "Content of %s is not of type RecordType",
-                    container->GetType()->GetName().c_str());
-              type = cast_intrusive<RecordType>(subtype);
-            }
-
+            static const auto type = get_field_type<RecordType>(container);
             const auto container = make_intrusive<RecordVal>(type);
 
             if (src->distingAttrValue) {
@@ -280,25 +254,8 @@ IntrusivePtr<Val> process_AttributeTypeAndDistinguishedValue(
 
               IntrusivePtr<Val> res;
               {
-
-                static IntrusivePtr<VectorType> type = nullptr;
-                if (!type) {
-                  auto container_type =
-                      cast_intrusive<RecordType>(container->GetType());
-                  if (!container_type->HasField("contextList"))
-                    reporter->InternalError(
-                        "Unable to process 'Member__contextList': "
-                        "Missing field 'contextList' in %s",
-                        container_type->GetName().c_str());
-                  auto field_type = container_type->GetFieldType("contextList");
-                  if (field_type->Tag() != TYPE_VECTOR)
-                    reporter->InternalError(
-                        "Unable to process 'Member__contextList': "
-                        "Field 'contextList' in %s is not of type VectorType",
-                        container_type->GetName().c_str());
-                  type = cast_intrusive<VectorType>(field_type);
-                }
-
+                static const auto type =
+                    get_field_type<VectorType>(container, "contextList");
                 const auto container = make_intrusive<VectorVal>(type);
                 for (int i = 0; i < src->list.count; i++) {
                   const auto _new_src = src->list.array[i];
@@ -361,24 +318,8 @@ IntrusivePtr<Val> process_EXTERNALt(EXTERNALt_t *src) {
 
       IntrusivePtr<Val> res;
       {
-
-        static IntrusivePtr<RecordType> type = nullptr;
-        if (!type) {
-          auto container_type =
-              cast_intrusive<RecordType>(container->GetType());
-          if (!container_type->HasField("encoding"))
-            reporter->InternalError("Unable to process 'EXTERNALt__encoding': "
-                                    "Missing field 'encoding' in %s",
-                                    container_type->GetName().c_str());
-          auto field_type = container_type->GetFieldType("encoding");
-          if (field_type->Tag() != TYPE_RECORD)
-            reporter->InternalError(
-                "Unable to process 'EXTERNALt__encoding': "
-                "Field 'encoding' in %s is not of type RecordType",
-                container_type->GetName().c_str());
-          type = cast_intrusive<RecordType>(field_type);
-        }
-
+        static const auto type =
+            get_field_type<RecordType>(container, "encoding");
         const auto container = make_intrusive<RecordVal>(type);
 
         if (src->present == EXTERNALt__encoding_PR_single_ASN1_type) {
@@ -489,24 +430,8 @@ IntrusivePtr<Val> process_AARQ_apdu(AARQ_apdu_t *src) {
     {
       const auto _new_src = src->protocol_version;
       const auto src = _new_src;
-
-      static IntrusivePtr<VectorType> type = nullptr;
-      if (!type) {
-        auto container_type = cast_intrusive<RecordType>(container->GetType());
-        if (!container_type->HasField("protocol_version"))
-          reporter->InternalError(
-              "Unable to process 'AARQ-apdu__protocol-version': "
-              "Missing field 'protocol_version' in %s",
-              container_type->GetName().c_str());
-        auto field_type = container_type->GetFieldType("protocol_version");
-        if (field_type->Tag() != TYPE_VECTOR)
-          reporter->InternalError(
-              "Unable to process 'AARQ-apdu__protocol-version': "
-              "Field 'protocol_version' in %s is not of type VectorType",
-              container_type->GetName().c_str());
-        type = cast_intrusive<VectorType>(field_type);
-      }
-
+      static const auto type =
+          get_field_type<VectorType>(container, "protocol_version");
       static IntrusivePtr<EnumType> enum_type = nullptr;
       if (!enum_type) {
         auto subtype = type->Yield();
@@ -664,24 +589,8 @@ IntrusivePtr<Val> process_AARE_apdu(AARE_apdu_t *src) {
     {
       const auto _new_src = src->protocol_version;
       const auto src = _new_src;
-
-      static IntrusivePtr<VectorType> type = nullptr;
-      if (!type) {
-        auto container_type = cast_intrusive<RecordType>(container->GetType());
-        if (!container_type->HasField("protocol_version"))
-          reporter->InternalError(
-              "Unable to process 'AARE-apdu__protocol-version': "
-              "Missing field 'protocol_version' in %s",
-              container_type->GetName().c_str());
-        auto field_type = container_type->GetFieldType("protocol_version");
-        if (field_type->Tag() != TYPE_VECTOR)
-          reporter->InternalError(
-              "Unable to process 'AARE-apdu__protocol-version': "
-              "Field 'protocol_version' in %s is not of type VectorType",
-              container_type->GetName().c_str());
-        type = cast_intrusive<VectorType>(field_type);
-      }
-
+      static const auto type =
+          get_field_type<VectorType>(container, "protocol_version");
       static IntrusivePtr<EnumType> enum_type = nullptr;
       if (!enum_type) {
         auto subtype = type->Yield();
@@ -1227,17 +1136,7 @@ IntrusivePtr<Val> process_ASOI_tag(ASOI_tag_t *src) {
 
       IntrusivePtr<Val> res;
       {
-
-        static IntrusivePtr<RecordType> type = nullptr;
-        if (!type) {
-          auto subtype = container->GetType()->Yield();
-          if (!subtype || subtype->Tag() != TYPE_RECORD)
-            reporter->InternalError("Unable to process 'ASOI-tag__Member': "
-                                    "Content of %s is not of type RecordType",
-                                    container->GetType()->GetName().c_str());
-          type = cast_intrusive<RecordType>(subtype);
-        }
-
+        static const auto type = get_field_type<RecordType>(container);
         const auto container = make_intrusive<RecordVal>(type);
 
         if (src->qualifier) {
@@ -1319,17 +1218,7 @@ IntrusivePtr<Val> process_Context_list(Context_list_t *src) {
 
       IntrusivePtr<Val> res;
       {
-
-        static IntrusivePtr<RecordType> type = nullptr;
-        if (!type) {
-          auto subtype = container->GetType()->Yield();
-          if (!subtype || subtype->Tag() != TYPE_RECORD)
-            reporter->InternalError("Unable to process 'Context-list__Member': "
-                                    "Content of %s is not of type RecordType",
-                                    container->GetType()->GetName().c_str());
-          type = cast_intrusive<RecordType>(subtype);
-        }
-
+        static const auto type = get_field_type<RecordType>(container);
         const auto container = make_intrusive<RecordVal>(type);
 
         {
@@ -1352,26 +1241,8 @@ IntrusivePtr<Val> process_Context_list(Context_list_t *src) {
 
           IntrusivePtr<Val> res;
           {
-
-            static IntrusivePtr<VectorType> type = nullptr;
-            if (!type) {
-              auto container_type =
-                  cast_intrusive<RecordType>(container->GetType());
-              if (!container_type->HasField("transfer_syntaxes"))
-                reporter->InternalError(
-                    "Unable to process 'Member__transfer-syntaxes': "
-                    "Missing field 'transfer_syntaxes' in %s",
-                    container_type->GetName().c_str());
-              auto field_type =
-                  container_type->GetFieldType("transfer_syntaxes");
-              if (field_type->Tag() != TYPE_VECTOR)
-                reporter->InternalError(
-                    "Unable to process 'Member__transfer-syntaxes': "
-                    "Field 'transfer_syntaxes' in %s is not of type VectorType",
-                    container_type->GetName().c_str());
-              type = cast_intrusive<VectorType>(field_type);
-            }
-
+            static const auto type =
+                get_field_type<VectorType>(container, "transfer_syntaxes");
             const auto container = make_intrusive<VectorVal>(type);
             for (int i = 0; i < src->list.count; i++) {
               const auto _new_src = src->list.array[i];
@@ -1407,18 +1278,7 @@ IntrusivePtr<Val> process_Default_Context_List(Default_Context_List_t *src) {
 
       IntrusivePtr<Val> res;
       {
-
-        static IntrusivePtr<RecordType> type = nullptr;
-        if (!type) {
-          auto subtype = container->GetType()->Yield();
-          if (!subtype || subtype->Tag() != TYPE_RECORD)
-            reporter->InternalError(
-                "Unable to process 'Default-Context-List__Member': "
-                "Content of %s is not of type RecordType",
-                container->GetType()->GetName().c_str());
-          type = cast_intrusive<RecordType>(subtype);
-        }
-
+        static const auto type = get_field_type<RecordType>(container);
         const auto container = make_intrusive<RecordVal>(type);
 
         if (src->abstract_syntax_name) {
@@ -1457,18 +1317,7 @@ IntrusivePtr<Val> process_P_context_result_list(P_context_result_list_t *src) {
 
       IntrusivePtr<Val> res;
       {
-
-        static IntrusivePtr<RecordType> type = nullptr;
-        if (!type) {
-          auto subtype = container->GetType()->Yield();
-          if (!subtype || subtype->Tag() != TYPE_RECORD)
-            reporter->InternalError(
-                "Unable to process 'P-context-result-list__Member': "
-                "Content of %s is not of type RecordType",
-                container->GetType()->GetName().c_str());
-          type = cast_intrusive<RecordType>(subtype);
-        }
-
+        static const auto type = get_field_type<RecordType>(container);
         const auto container = make_intrusive<RecordVal>(type);
 
         {
@@ -1614,27 +1463,8 @@ IntrusivePtr<Val> process_PDV_list(PDV_list_t *src) {
 
       IntrusivePtr<Val> res;
       {
-
-        static IntrusivePtr<RecordType> type = nullptr;
-        if (!type) {
-          auto container_type =
-              cast_intrusive<RecordType>(container->GetType());
-          if (!container_type->HasField("presentation_data_values"))
-            reporter->InternalError(
-                "Unable to process 'PDV-list__presentation-data-values': "
-                "Missing field 'presentation_data_values' in %s",
-                container_type->GetName().c_str());
-          auto field_type =
-              container_type->GetFieldType("presentation_data_values");
-          if (field_type->Tag() != TYPE_RECORD)
-            reporter->InternalError(
-                "Unable to process 'PDV-list__presentation-data-values': "
-                "Field 'presentation_data_values' in %s is not of type "
-                "RecordType",
-                container_type->GetName().c_str());
-          type = cast_intrusive<RecordType>(field_type);
-        }
-
+        static const auto type =
+            get_field_type<RecordType>(container, "presentation_data_values");
         const auto container = make_intrusive<RecordVal>(type);
 
         if (src->present ==
