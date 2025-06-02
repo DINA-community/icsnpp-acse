@@ -112,9 +112,7 @@ void Analyzer::forward(IntrusivePtr<IntVal> cid, IntrusivePtr<StringVal> data, b
         return;
     }
 
-    auto analyzer_name="ISO_"+oid->AsStringVal()->ToStdString();
-    std::replace(analyzer_name.begin(), analyzer_name.end(), '.', '_');
-
+    std::string analyzer_name = util::canonify_name("ISO:" + oid->AsStringVal()->ToStdString());
     auto *analyzer=FindChild(analyzer_name.c_str());
     if(!analyzer) {
         analyzer=analyzer_mgr->InstantiateAnalyzer(analyzer_name.c_str(), Conn());
