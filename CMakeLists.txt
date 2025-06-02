@@ -42,6 +42,9 @@ endforeach ()
 zeek_plugin_dist_files(README CHANGES COPYING VERSION)
 zeek_plugin_end()
 
+zeek_get_dynamic_plugin_target(target_name OSS ACSE)
+add_custom_command(TARGET "${target_name}_symlink" POST_BUILD COMMAND "${CMAKE_COMMAND}" -E create_symlink "${CMAKE_CURRENT_SOURCE_DIR}/plugin/scripts" scripts)
+
 if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     # Allows building rpm/deb packages via "make package" in build dir.
     include(ConfigurePackaging)
