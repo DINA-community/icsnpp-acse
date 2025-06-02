@@ -1,0 +1,3 @@
+module acse;
+
+event acse_apdu%(c: connection, is_orig: bool, apdu: ACSE_apdu%);

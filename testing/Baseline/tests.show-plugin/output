@@ -2,4 +2,5 @@
 OSS::ACSE (dynamic, version)
     [Analyzer] ACSE (ANALYZER_ACSE, enabled)
     [Analyzer] ISO_2_2_1_0_1 (ANALYZER_ISO_2_2_1_0_1, enabled)
+    [Event] acse::acse_apdu
 

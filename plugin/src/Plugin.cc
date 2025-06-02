@@ -42,9 +42,4 @@ zeek::plugin::Configuration Plugin::Configure()
 	return config;
 }
 
-void Plugin::InitPreScript() {
-    zeek::plugin::Plugin::InitPreScript();
-    event_registry->Register(ACSE_PDU_EVENT);
-}
-
 } // namespace zeek::plugin::acse

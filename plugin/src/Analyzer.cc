@@ -7,6 +7,7 @@
 #include "Analyzer.h"
 #include "Plugin.h"
 #include "process.h"
+#include "events.bif.h"
 
 #define CONTEXT_TABLE_NAME "iso_pres_context_identifier"
 
@@ -17,8 +18,6 @@ namespace zeek::plugin::acse {
 Analyzer::Analyzer(const char* name, zeek::Connection* c) : zeek::analyzer::Analyzer(name, c) {}
 
 void Analyzer::DeliverPacket(int len, const u_char* data, bool orig, uint64_t, const IP_Hdr*, int) {
-    static const auto event = event_registry->Lookup(ACSE_PDU_EVENT);
-
     ACSE_apdu *pdu_raw = NULL;
     auto desc = &asn_DEF_ACSE_apdu;
 
@@ -42,7 +41,7 @@ void Analyzer::DeliverPacket(int len, const u_char* data, bool orig, uint64_t, c
     desc->free_struct(desc, pdu_raw, 0);
 
     extract_payload_and_forward(pdu, orig);
-    EnqueueConnEvent(event, ConnVal(), val_mgr->Bool(orig), pdu);
+    zeek::BifEvent::acse::enqueue_acse_apdu(this, Conn(), orig, pdu);
 }
 
 void Analyzer::extract_payload_and_forward(IntrusivePtr<RecordVal> pdu, bool orig) {
