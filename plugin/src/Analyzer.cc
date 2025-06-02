@@ -8,7 +8,7 @@
 #include "Plugin.h"
 #include "process.h"
 
-#define CONTEXT_TABLE_NAME "iso_8650_context_identifier"
+#define CONTEXT_TABLE_NAME "iso_pres_context_identifier"
 
 using namespace zeek;
 
