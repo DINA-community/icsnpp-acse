@@ -29,14 +29,17 @@ include(ZeekPlugin)
 
 zeek_plugin_begin(OSS ACSE)
 
+# The following line is manually added!
+zeek_plugin_link_library(asn1c)
+
 file(GLOB cc_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "plugin/src/*.cc")
 foreach(file ${cc_files})
     zeek_plugin_cc(${file})
 endforeach ()
 
-file(GLOB c_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "plugin/src/asn1c/*.c")
-foreach(file ${c_files})
-    zeek_plugin_cc(${file})
+file(GLOB bif_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "plugin/src/*.bif")
+foreach(file ${bif_files})
+    zeek_plugin_bif(${file})
 endforeach ()
 
 zeek_plugin_dist_files(README CHANGES COPYING VERSION)
