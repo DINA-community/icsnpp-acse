@@ -60,7 +60,14 @@ export {
     service_provider = 1,
   };
   
-  type ABRT_diagnostic: int;
+  type ABRT_diagnostic: enum {
+    ABRT_diagnostic_no_reason_given = 1,
+    protocol_error = 2,
+    ABRT_diagnostic_authentication_mechanism_name_not_recognized = 3,
+    ABRT_diagnostic_authentication_mechanism_name_required = 4,
+    ABRT_diagnostic_authentication_failure = 5,
+    ABRT_diagnostic_authentication_required = 6,
+  };
   
   type Simply_encoded_data: string;
   
@@ -191,7 +198,7 @@ export {
   type Associate_source_diagnostic: record {
     service_user: enum {
       null = 0,
-      no_reason_given = 1,
+      Associate_source_diagnostic_no_reason_given = 1,
       application_context_name_not_supported = 2,
       calling_AP_title_not_recognized = 3,
       calling_AP_invocation_identifier_not_recognized = 4,
@@ -201,14 +208,14 @@ export {
       called_AP_invocation_identifier_not_recognized = 8,
       called_AE_qualifier_not_recognized = 9,
       called_AE_invocation_identifier_not_recognized = 10,
-      authentication_mechanism_name_not_recognized = 11,
-      authentication_mechanism_name_required = 12,
-      authentication_failure = 13,
-      authentication_required = 14,
+      Associate_source_diagnostic_authentication_mechanism_name_not_recognized = 11,
+      Associate_source_diagnostic_authentication_mechanism_name_required = 12,
+      Associate_source_diagnostic_authentication_failure = 13,
+      Associate_source_diagnostic_authentication_required = 14,
     } &optional;
     service_provider: enum {
       null = 0,
-      no_reason_given = 1,
+      Associate_source_diagnostic_no_reason_given = 1,
       no_common_acse_version = 2,
     } &optional;
   };

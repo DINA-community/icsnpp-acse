@@ -48,7 +48,8 @@ One dataset is logged for each AARE pdu containing the following fields.
 | calling_ap_title  | string    | ap title of the caller                                                    |
 | called_ap_title   | string    | responding ap title from aare if available else called ap title from aarq |
 | auth_mechanism    | string    | choosen authentication mechanism if any                                   |
-| result            | string    | result of the response                                                    |
+| result            | string    | result of the response or the abort pdu                                   |
+| aborted           | string    | true if an abort pdu was received                                         |
 | diag              | string    | diagnostic data if any                                                    |
 
 ## License

@@ -11,7 +11,8 @@ export {
         calling_ap_title:    string     &log &optional;
         called_ap_title:     string     &log &optional;
         auth_mechanism:      string     &log &optional;
-        result:              string     &log;
+        result:              string     &log &optional;
+        aborted:             bool       &log &default=F;
         diag:                string     &log &optional;
     };
 }
@@ -53,7 +54,7 @@ event aare_apdu(c: connection, is_orig: bool, aare: AARE_apdu) {
     ];
 
     if(c ?$ acse_aarq_apdu && c $ acse_aarq_apdu ?$ calling_AP_title)
-        info $ calling_ap_title = ap_title_to_str(c$acse_aarq_apdu $ calling_AP_title);
+        info $ calling_ap_title = ap_title_to_str(c $ acse_aarq_apdu $ calling_AP_title);
 
     # if the responding ap is different from the called ap the answering ap is logged
     if(aare ?$ responding_AP_title) {
@@ -69,3 +70,25 @@ event aare_apdu(c: connection, is_orig: bool, aare: AARE_apdu) {
 
     Log::write(LOG, info);
 }
+
+event abrt_apdu(c: connection, is_orig: bool, abrt: ABRT_apdu) {
+    local info: Info = [
+        $ts =  network_time(),
+        $uid = c $ uid,
+        $id = c $ id,
+        $aborted = T,
+    ];
+    if(c ?$ acse_aarq_apdu && c $ acse_aarq_apdu ?$ aSO_context_name)
+        info $ context_name = c $ acse_aarq_apdu $ aSO_context_name;
+
+    if(c ?$ acse_aarq_apdu && c $ acse_aarq_apdu ?$ calling_AP_title)
+        info $ calling_ap_title = ap_title_to_str(c $ acse_aarq_apdu $ calling_AP_title);
+    if(c ?$ acse_aarq_apdu && c $ acse_aarq_apdu ?$ called_AP_title)
+        info $ called_ap_title = ap_title_to_str(c $ acse_aarq_apdu $ called_AP_title);
+
+    if(abrt ?$ abort_diagnostic)
+        info $ diag = cat(abrt $ abort_diagnostic);
+
+    Log::write(LOG, info);
+}
+
