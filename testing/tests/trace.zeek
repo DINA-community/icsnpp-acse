@@ -1,8 +1,13 @@
 # @TEST-DOC: Test Zeek parsing a trace file through the acse analyzer.
 #
-# @TEST-EXEC: zeek -Cr ${TRACES}/refuse.pcapng ${PACKAGE} %INPUT >output
-# @TEST-EXEC: btest-diff output
-# @TEST-EXEC: btest-diff acse.log
+# @TEST-EXEC: zeek -Cr ${TRACES}/accept.pcap ${PACKAGE} %INPUT >accept
+# @TEST-EXEC: btest-diff accept
+# @TEST-EXEC: mv acse.log accept.log; btest-diff accept.log
+#
+#
+# @TEST-EXEC: zeek -Cr ${TRACES}/refuse.pcapng ${PACKAGE} %INPUT >refuse
+# @TEST-EXEC: btest-diff refuse
+# @TEST-EXEC: mv acse.log refuse.log; btest-diff refuse.log
 #
 
 module acse;
