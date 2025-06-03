@@ -9,7 +9,7 @@ export {
         id:                  conn_id    &log;
         context_name:        string     &log &optional;
         calling_ap_title:    string     &log &optional;
-        responding_ap_title: string     &log &optional;
+        called_ap_title:     string     &log &optional;
         auth_mechanism:      string     &log &optional;
         result:              string     &log;
         diag:                string     &log &optional;
@@ -52,10 +52,16 @@ event aare_apdu(c: connection, is_orig: bool, aare: AARE_apdu) {
         $result = split_string1(cat(aare $ result), /::/)[-1]
     ];
 
-    if(c ?$ acse_aarq_apdu && c$acse_aarq_apdu ?$ calling_AP_title)
+    if(c ?$ acse_aarq_apdu && c $ acse_aarq_apdu ?$ calling_AP_title)
         info $ calling_ap_title = ap_title_to_str(c$acse_aarq_apdu $ calling_AP_title);
-    if(aare ?$ responding_AP_title)
-        info $ responding_ap_title = ap_title_to_str(aare $ responding_AP_title);
+
+    # if the responding ap is different from the called ap the answering ap is logged
+    if(aare ?$ responding_AP_title) {
+        info $ called_ap_title = ap_title_to_str(aare $ responding_AP_title);
+    } else if(c ?$ acse_aarq_apdu && c $ acse_aarq_apdu ?$ called_AP_title) {
+        info $ called_ap_title = ap_title_to_str(c $ acse_aarq_apdu $ called_AP_title);
+    }
+
     if(aare ?$ mechanism_name)
         info $ auth_mechanism = aare $ mechanism_name;
     if(aare ?$ result_source_diagnostic && aare $ result_source_diagnostic $ service_user != acse::null)
