@@ -5,7 +5,7 @@ Industrial Control Systems Network Protocol Parsers (ICSNPP) - Association Contr
 ## Overview
 
 This plugin provides a protocol analyzer for Association Control Service
-Element (ACSE) (ISO 8823 / X.227) for use within Zeek. The analyzer enables
+Element (ACSE) (ISO 8650 / X.227) for use within Zeek. The analyzer enables
 Zeek to parse ACSE messages.
 
 ## Dependencies
