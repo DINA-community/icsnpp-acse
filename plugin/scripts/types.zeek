@@ -87,7 +87,7 @@ export {
     primaryDistinguished: bool;
     valuesWithContext: vector of record {
       distingAttrValue: string &optional;
-      contextList: vector of Context &optional;
+      contextList: vector of Context;
     } &optional;
   };
   
@@ -105,7 +105,7 @@ export {
       single_ASN1_type: string &optional;
       octet_aligned: string &optional;
       arbitrary: string &optional;
-    } &optional;
+    };
   };
   
   type AP_title_form1: Name;
@@ -156,7 +156,7 @@ export {
   
   type Default_Context_List: vector of record {
     abstract_syntax_name: Abstract_syntax_name &optional;
-    transfer_syntax_name: TransferSyntaxName &optional;
+    transfer_syntax_name: TransferSyntaxName;
   };
   
   type Syntactic_context_list: record {
@@ -197,8 +197,8 @@ export {
   
   type Associate_source_diagnostic: record {
     service_user: enum {
-      null = 0,
-      Associate_source_diagnostic_no_reason_given = 1,
+      Associate_source_diagnostic_service_user_null = 0,
+      Associate_source_diagnostic_service_user_no_reason_given = 1,
       application_context_name_not_supported = 2,
       calling_AP_title_not_recognized = 3,
       calling_AP_invocation_identifier_not_recognized = 4,
@@ -214,8 +214,8 @@ export {
       Associate_source_diagnostic_authentication_required = 14,
     } &optional;
     service_provider: enum {
-      null = 0,
-      Associate_source_diagnostic_no_reason_given = 1,
+      Associate_source_diagnostic_service_provider_null = 0,
+      Associate_source_diagnostic_service_provider_no_reason_given = 1,
       no_common_acse_version = 2,
     } &optional;
   };
@@ -281,12 +281,12 @@ export {
   
   type PDV_list: record {
     transfer_syntax_name: TransferSyntaxName &optional;
-    presentation_context_identifier: Presentation_context_identifier &optional;
+    presentation_context_identifier: Presentation_context_identifier;
     presentation_data_values: record {
       simple_ASN1_type: string &optional;
       octet_aligned: string &optional;
       arbitrary: string &optional;
-    } &optional;
+    };
   };
   
   type User_Data: record {
@@ -298,7 +298,7 @@ export {
   type A_DT_apdu: record {
     aso_qualifier: ASO_qualifier &optional;
     asoi_identifier: ASOI_identifier &optional;
-    a_user_data: User_Data &optional;
+    a_user_data: User_Data;
   };
   
   type ACRQ_apdu: record {

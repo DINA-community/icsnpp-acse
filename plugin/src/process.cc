@@ -186,7 +186,8 @@ IntrusivePtr<Val> process_Context(const Context_t *src) {
     }
 
     {
-      const auto default_value = 0;
+      const std::remove_pointer<decltype(src->fallback)>::type default_value =
+          0;
       const auto _new_src = ptr(src->fallback ? src->fallback : &default_value);
       const auto src = _new_src;
       const auto res = convert(src);
@@ -221,7 +222,8 @@ IntrusivePtr<Val> process_AttributeTypeAndDistinguishedValue(
     }
 
     {
-      const auto default_value = 1;
+      const std::remove_pointer<decltype(src->primaryDistinguished)>::type
+          default_value = 1;
       const auto _new_src =
           ptr(src->primaryDistinguished ? src->primaryDistinguished
                                         : &default_value);
