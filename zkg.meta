@@ -1,5 +1,10 @@
 [package]
 script_dir = scripts
+depends =
+    https://github.com/DINA-community/icsnpp-tpkt *
+    https://github.com/DINA-community/icsnpp-cotp *
+    https://github.com/DINA-community/icsnpp-sess *
+    https://github.com/DINA-community/icsnpp-pres *
 build_command = ./configure && cmake --build build
 test_command = cd testing && btest -c btest.cfg
 summary = Analyzer for the OSI Association Control Service (ACSE) protocol
@@ -15,4 +20,3 @@ features = plugin
 [template_vars]
 name = ACSE
 namespace = OSS
-
